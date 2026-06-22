@@ -225,3 +225,297 @@ Este comando:
 4. escribe `benchmarks/summary.md`.
 
 El archivo `benchmarks/results.csv` es un artefacto generado e ignorado por Git. El archivo `benchmarks/summary.md` sí se versiona para documentar resultados representativos.
+
+## Comandos de prueba y visualización de resultados
+
+Esta sección resume los comandos principales para compilar, probar, validar memoria, ejecutar benchmarks y revisar resultados.
+
+### 1. Compilación normal
+
+Compilar el proyecto:
+
+    make clean
+    make
+
+Ejecutar con la configuración de ejemplo:
+
+    ./parallel_search config/example.conf
+
+Ejecutar con una cantidad específica de hilos:
+
+    ./parallel_search config/example.conf --threads 4
+
+### 2. Pruebas funcionales
+
+Ejecutar pruebas funcionales básicas:
+
+    make test
+
+Este comando prueba el programa con distintas cantidades de hilos y verifica que las configuraciones principales funcionen correctamente.
+
+### 3. Pruebas de configuraciones inválidas
+
+Ejecutar pruebas de archivos de configuración incorrectos:
+
+    make test-invalid
+
+Este comando valida que el programa rechace casos como:
+
+- modo inválido,
+- longitud inválida,
+- target con longitud incorrecta,
+- target con caracteres no permitidos,
+- verbose inválido,
+- print_ranges inválido,
+- chunk_size inválido,
+- archivo inexistente.
+
+### 4. Validación completa
+
+Ejecutar una validación general del proyecto:
+
+    make check
+
+Este comando combina:
+
+- compilación limpia,
+- pruebas funcionales,
+- pruebas de configuraciones inválidas,
+- compilación con sanitizers,
+- ejecución con sanitizers.
+
+### 5. Validación con Valgrind
+
+Ejecutar Valgrind:
+
+    make valgrind
+
+Resultado esperado:
+
+    All heap blocks were freed -- no leaks are possible
+    ERROR SUMMARY: 0 errors from 0 contexts
+
+Esto valida que no haya fugas de memoria ni errores detectados por Valgrind en la prueba ejecutada.
+
+### 6. Benchmark rápido
+
+Ejecutar benchmark rápido:
+
+    make benchmark
+
+Este comando genera:
+
+    benchmarks/results.csv
+
+El archivo CSV contiene resultados por cantidad de hilos, incluyendo tiempo, intentos y throughput.
+
+### 7. Ver resultados del benchmark
+
+Ver el CSV directamente:
+
+    cat benchmarks/results.csv
+
+Verlo en formato de tabla en consola:
+
+    column -s, -t benchmarks/results.csv | less -S
+
+Analizar el CSV y calcular speedup y eficiencia:
+
+    make analyze-benchmark
+
+También puede ejecutarse directamente:
+
+    python3 scripts/analyze_benchmarks.py benchmarks/results.csv
+
+### 8. Benchmark con reporte automático
+
+Ejecutar benchmark y análisis en un solo paso:
+
+    make benchmark-report
+
+Este comando:
+
+1. ejecuta el benchmark,
+2. genera `benchmarks/results.csv`,
+3. calcula tiempo promedio, throughput, speedup y eficiencia,
+4. imprime una tabla Markdown en consola.
+
+### 9. Reporte versionable de benchmark
+
+Generar un resumen Markdown versionable:
+
+    make benchmark-summary
+
+Este comando genera:
+
+    benchmarks/summary.md
+
+Ver el resumen:
+
+    sed -n '1,160p' benchmarks/summary.md
+
+El archivo `benchmarks/results.csv` es un artefacto generado e ignorado por Git. El archivo `benchmarks/summary.md` se versiona para documentar resultados representativos.
+
+### 10. Flujo recomendado de validación final
+
+Antes de considerar estable una versión, ejecutar:
+
+    make clean
+    make check
+    make valgrind
+    make benchmark-report
+
+Después revisar el estado del repositorio:
+
+    git status
+
+El estado esperado es:
+
+    nothing to commit, working tree clean
+
+## Comandos de prueba y visualización de resultados
+
+Esta sección resume los comandos principales para compilar, probar, validar memoria, ejecutar benchmarks y revisar resultados.
+
+### 1. Compilación normal
+
+Compilar el proyecto:
+
+    make clean
+    make
+
+Ejecutar con la configuración de ejemplo:
+
+    ./parallel_search config/example.conf
+
+Ejecutar con una cantidad específica de hilos:
+
+    ./parallel_search config/example.conf --threads 4
+
+### 2. Pruebas funcionales
+
+Ejecutar pruebas funcionales básicas:
+
+    make test
+
+Este comando prueba el programa con distintas cantidades de hilos y verifica que las configuraciones principales funcionen correctamente.
+
+### 3. Pruebas de configuraciones inválidas
+
+Ejecutar pruebas de archivos de configuración incorrectos:
+
+    make test-invalid
+
+Este comando valida que el programa rechace casos como:
+
+- modo inválido,
+- longitud inválida,
+- target con longitud incorrecta,
+- target con caracteres no permitidos,
+- verbose inválido,
+- print_ranges inválido,
+- chunk_size inválido,
+- archivo inexistente.
+
+### 4. Validación completa
+
+Ejecutar una validación general del proyecto:
+
+    make check
+
+Este comando combina:
+
+- compilación limpia,
+- pruebas funcionales,
+- pruebas de configuraciones inválidas,
+- compilación con sanitizers,
+- ejecución con sanitizers.
+
+### 5. Validación con Valgrind
+
+Ejecutar Valgrind:
+
+    make valgrind
+
+Resultado esperado:
+
+    All heap blocks were freed -- no leaks are possible
+    ERROR SUMMARY: 0 errors from 0 contexts
+
+Esto valida que no haya fugas de memoria ni errores detectados por Valgrind en la prueba ejecutada.
+
+### 6. Benchmark rápido
+
+Ejecutar benchmark rápido:
+
+    make benchmark
+
+Este comando genera:
+
+    benchmarks/results.csv
+
+El archivo CSV contiene resultados por cantidad de hilos, incluyendo tiempo, intentos y throughput.
+
+### 7. Ver resultados del benchmark
+
+Ver el CSV directamente:
+
+    cat benchmarks/results.csv
+
+Verlo en formato de tabla en consola:
+
+    column -s, -t benchmarks/results.csv | less -S
+
+Analizar el CSV y calcular speedup y eficiencia:
+
+    make analyze-benchmark
+
+También puede ejecutarse directamente:
+
+    python3 scripts/analyze_benchmarks.py benchmarks/results.csv
+
+### 8. Benchmark con reporte automático
+
+Ejecutar benchmark y análisis en un solo paso:
+
+    make benchmark-report
+
+Este comando:
+
+1. ejecuta el benchmark,
+2. genera `benchmarks/results.csv`,
+3. calcula tiempo promedio, throughput, speedup y eficiencia,
+4. imprime una tabla Markdown en consola.
+
+### 9. Reporte versionable de benchmark
+
+Generar un resumen Markdown versionable:
+
+    make benchmark-summary
+
+Este comando genera:
+
+    benchmarks/summary.md
+
+Ver el resumen:
+
+    sed -n '1,160p' benchmarks/summary.md
+
+El archivo `benchmarks/results.csv` es un artefacto generado e ignorado por Git. El archivo `benchmarks/summary.md` se versiona para documentar resultados representativos.
+
+### 10. Flujo recomendado de validación final
+
+Antes de considerar estable una versión, ejecutar:
+
+    make clean
+    make check
+    make valgrind
+    make benchmark-report
+
+Después revisar el estado del repositorio:
+
+    git status
+
+El estado esperado es:
+
+    nothing to commit, working tree clean

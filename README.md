@@ -1,102 +1,126 @@
+# parallel-search-engine-c
 
-## Uso con cantidad de hilos configurable
+Motor educativo de exploración exhaustiva de espacios de búsqueda en C usando POSIX pthreads sobre Linux.
 
-Por defecto, el programa detecta automáticamente la cantidad de procesadores lógicos disponibles:
+El proyecto está basado en un ejercicio académico de procesamiento paralelo, pero fue estructurado como un proyecto demostrable de programación de sistemas para practicar C, Linux, concurrencia, validación de memoria, benchmarking y documentación técnica.
 
-~~~~bash
-./parallel_search config/example.conf
-~~~~
+## Objetivo
 
-También se puede especificar la cantidad de hilos manualmente:
+Implementar un motor local de búsqueda exhaustiva que divida un espacio de combinaciones entre múltiples hilos usando POSIX pthreads.
 
-~~~~bash
-./parallel_search config/example.conf --threads 4
-~~~~
+El programa:
 
-Esto permite realizar benchmarks comparando 1 hilo contra múltiples hilos:
+- Lee una configuración desde archivo.
+- Construye un conjunto de caracteres según el modo seleccionado.
+- Calcula el espacio total de búsqueda.
+- Divide el trabajo en chunks dinámicos.
+- Ejecuta búsqueda paralela con pthreads.
+- Permite configurar la cantidad de hilos.
+- Permite benchmark con escaneo completo.
+- Mide tiempo, intentos y throughput.
+- Incluye validación con sanitizers y Valgrind.
 
-~~~~bash
-./parallel_search config/example.conf --threads 1
-./parallel_search config/example.conf --threads 2
-./parallel_search config/example.conf --threads 4
-./parallel_search config/example.conf --threads 8
-./parallel_search config/example.conf --threads 12
-~~~~
+## Enfoque educativo
 
-Si se pasa una cantidad inválida de hilos, el programa muestra un mensaje de uso o rechaza el valor:
+Este repositorio es únicamente educativo y local.
 
-~~~~bash
-./parallel_search config/example.conf --threads 0
-./parallel_search config/example.conf --threads abc
-./parallel_search config/example.conf --threads 99
-~~~~
+No está orientado a atacar cuentas reales, servicios externos, redes, sistemas de terceros ni contraseñas ajenas. La cadena objetivo se define localmente en un archivo de configuración para estudiar paralelismo, scheduling y rendimiento en C.
 
-## Benchmarking
+## Tecnologías
 
-El proyecto incluye una configuración de benchmark en:
+- C11
+- POSIX pthreads
+- Linux / WSL / Ubuntu nativo
+- gcc
+- make
+- Valgrind
+- AddressSanitizer / UndefinedBehaviorSanitizer
+- Git
 
-    config/benchmark.conf
+## Estructura del proyecto
 
-Esta configuración usa una cadena objetivo local al final del espacio de búsqueda para medir mejor el comportamiento con diferentes cantidades de hilos.
+    parallel-search-engine-c/
+    ├── Makefile
+    ├── README.md
+    ├── benchmarks/
+    │   └── README.md
+    ├── config/
+    │   ├── example.conf
+    │   └── benchmark.conf
+    ├── docs/
+    │   ├── ARCHITECTURE.md
+    │   ├── BENCHMARKING.md
+    │   └── VALIDATION.md
+    ├── include/
+    │   ├── charset.h
+    │   ├── config.h
+    │   ├── metrics.h
+    │   ├── scheduler.h
+    │   ├── search.h
+    │   └── timer.h
+    ├── scripts/
+    │   └── run_benchmarks.sh
+    └── src/
+        ├── charset.c
+        ├── config.c
+        ├── main.c
+        ├── metrics.c
+        ├── scheduler.c
+        ├── search.c
+        └── timer.c
 
-Ejecución rápida:
+## Configuración
 
-    RUNS=1 THREADS="1 2 4" scripts/run_benchmarks.sh
+Ejemplo básico:
 
-Ejecución recomendada:
-
-    RUNS=3 THREADS="1 2 4 8 12" scripts/run_benchmarks.sh
-
-El resultado se genera en:
-
-    benchmarks/results.csv
-
-Los archivos CSV generados no se versionan por defecto porque los resultados dependen del hardware, sistema operativo, carga del sistema y entorno de ejecución.
-
-## Modo full scan
-
-El modo normal se detiene cuando algún hilo encuentra la cadena objetivo:
-
-    ./parallel_search config/benchmark.conf --threads 4
-
-Para benchmarks más reproducibles, se puede usar `--full-scan`:
-
-    ./parallel_search config/benchmark.conf --threads 4 --full-scan
-
-En este modo, el programa registra el objetivo encontrado, pero continúa hasta procesar todo el espacio de búsqueda. Esto hace que `Attempts` sea igual a `Search space`, lo cual permite comparar mejor el throughput entre distintas cantidades de hilos.
-
-El script de benchmarks usa `--full-scan` por defecto:
-
-    RUNS=3 THREADS="1 2 4 8 12" scripts/run_benchmarks.sh
-
-Para desactivar full scan en el script:
-
-    FULL_SCAN=0 RUNS=3 THREADS="1 2 4 8 12" scripts/run_benchmarks.sh
-
-
-## Control de impresión de rangos
-
-El archivo de configuración permite controlar si cada hilo imprime los rangos de trabajo asignados:
-
+    mode=2
+    length=4
+    target=a9z1
+    verbose=0
     print_ranges=1
+    chunk_size=100000
 
-Este modo es útil para demostrar visualmente la distribución dinámica de chunks entre hilos.
+Campos:
 
-Para benchmarks, se recomienda desactivarlo:
+| Campo | Descripción |
+|---|---|
+| mode | Modo del conjunto de caracteres |
+| length | Longitud de la cadena objetivo |
+| target | Cadena objetivo local |
+| verbose | Imprime cada intento generado |
+| print_ranges | Imprime rangos asignados a cada hilo |
+| chunk_size | Tamaño de cada bloque dinámico de trabajo |
 
-    print_ranges=0
+Modos de charset:
 
-Esto reduce el ruido en consola y evita que las mediciones se vean afectadas por impresión innecesaria.
+| Modo | Caracteres |
+|---:|---|
+| 1 | Números |
+| 2 | Números y letras minúsculas |
+| 3 | Números, minúsculas y mayúsculas |
+| 4 | Números, letras y caracteres especiales |
 
-## Validación automatizada
-
-El `Makefile` incluye comandos para compilar, probar y validar el proyecto.
-
-Compilación normal:
+## Compilación
 
     make
 
-Ejecución de pruebas funcionales básicas:
+## Ejecución
+
+Modo automático, usando todos los procesadores lógicos detectados:
+
+    ./parallel_search config/example.conf
+
+Cantidad de hilos configurable:
+
+    ./parallel_search config/example.conf --threads 4
+
+Modo full scan para benchmarking reproducible:
+
+    ./parallel_search config/benchmark.conf --threads 4 --full-scan
+
+## Validación automatizada
+
+Pruebas funcionales básicas:
 
     make test
 
@@ -112,6 +136,36 @@ Benchmark rápido:
 
     make benchmark
 
-Limpieza del binario generado:
+Limpieza:
 
     make clean
+
+## Benchmarking
+
+El script de benchmark ejecuta el programa con diferentes cantidades de hilos y genera un CSV:
+
+    RUNS=3 THREADS="1 2 4 8 12" scripts/run_benchmarks.sh
+
+Salida generada:
+
+    benchmarks/results.csv
+
+El benchmark usa `--full-scan` por defecto para que todos los hilos procesen el espacio completo y los resultados sean comparables.
+
+## Ejemplo de resultados
+
+Ejemplo de benchmark en WSL2 con 12 procesadores lógicos detectados:
+
+| Hilos | Attempts | Tiempo | Throughput |
+|---:|---:|---:|---:|
+| 1 | 60,466,176 | 0.639 s | 94.57 M attempts/s |
+| 2 | 60,466,176 | 0.343 s | 176.50 M attempts/s |
+| 4 | 60,466,176 | 0.189 s | 319.11 M attempts/s |
+
+Los resultados varían según CPU, sistema operativo, carga del sistema y entorno de ejecución.
+
+## Documentación adicional
+
+- `docs/ARCHITECTURE.md`: diseño interno del sistema.
+- `docs/VALIDATION.md`: comandos de validación y criterios de calidad.
+- `docs/BENCHMARKING.md`: metodología de benchmark.

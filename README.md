@@ -169,3 +169,23 @@ Los resultados varían según CPU, sistema operativo, carga del sistema y entorn
 - `docs/ARCHITECTURE.md`: diseño interno del sistema.
 - `docs/VALIDATION.md`: comandos de validación y criterios de calidad.
 - `docs/BENCHMARKING.md`: metodología de benchmark.
+
+## Pruebas de configuración inválida
+
+El proyecto incluye pruebas para validar que configuraciones incorrectas sean rechazadas correctamente.
+
+Ejecutar:
+
+    make test-invalid
+
+Casos cubiertos:
+
+- archivo inexistente
+- mode inválido
+- length inválido
+- target con longitud incorrecta
+- target con caracteres no permitidos
+- verbose inválido
+- print_ranges inválido
+- chunk_size inválido
+- target ausente

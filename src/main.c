@@ -16,10 +16,16 @@ static void print_usage(const char *program_name)
     fprintf(stderr,
             "Uso:\n"
             "  %s <archivo_config>\n"
-            "  %s <archivo_config> --threads <N>\n\n"
+            "  %s <archivo_config> --threads <N>\n"
+            "  %s <archivo_config> --full-scan\n"
+            "  %s <archivo_config> --threads <N> --full-scan\n\n"
             "Ejemplos:\n"
             "  %s config/example.conf\n"
-            "  %s config/example.conf --threads 4\n",
+            "  %s config/example.conf --threads 4\n"
+            "  %s config/benchmark.conf --threads 4 --full-scan\n",
+            program_name,
+            program_name,
+            program_name,
             program_name,
             program_name,
             program_name,
@@ -54,30 +60,50 @@ static int parse_arguments(int argc,
                            char **argv,
                            const char **config_path,
                            long *requested_threads,
-                           int *threads_was_set)
+                           int *threads_was_set,
+                           int *full_scan)
 {
-    if (argc != 2 && argc != 4) {
+    int i;
+
+    if (argc < 2) {
         return -1;
     }
 
-    if (config_path == NULL || requested_threads == NULL || threads_was_set == NULL) {
+    if (config_path == NULL ||
+        requested_threads == NULL ||
+        threads_was_set == NULL ||
+        full_scan == NULL) {
         return -1;
     }
 
     *config_path = argv[1];
     *requested_threads = 0L;
     *threads_was_set = 0;
+    *full_scan = 0;
 
-    if (argc == 4) {
-        if (strcmp(argv[2], "--threads") != 0) {
+    i = 2;
+    while (i < argc) {
+        if (strcmp(argv[i], "--threads") == 0) {
+            if (*threads_was_set || i + 1 >= argc) {
+                return -1;
+            }
+
+            if (parse_thread_count(argv[i + 1], requested_threads) != 0) {
+                return -1;
+            }
+
+            *threads_was_set = 1;
+            i += 2;
+        } else if (strcmp(argv[i], "--full-scan") == 0) {
+            if (*full_scan) {
+                return -1;
+            }
+
+            *full_scan = 1;
+            i++;
+        } else {
             return -1;
         }
-
-        if (parse_thread_count(argv[3], requested_threads) != 0) {
-            return -1;
-        }
-
-        *threads_was_set = 1;
     }
 
     return 0;
@@ -95,13 +121,14 @@ int main(int argc, char **argv)
     long worker_threads;
     long requested_threads;
     int threads_was_set;
+    int full_scan;
     double start_time;
     double end_time;
     ParallelSearchResult result;
     int search_status;
     char found_candidate[MAX_PASSWORD_LEN + 1U];
 
-    if (parse_arguments(argc, argv, &config_path, &requested_threads, &threads_was_set) != 0) {
+    if (parse_arguments(argc, argv, &config_path, &requested_threads, &threads_was_set, &full_scan) != 0) {
         print_usage(argv[0]);
         return EXIT_FAILURE;
     }
@@ -158,6 +185,7 @@ int main(int argc, char **argv)
     printf("Logical processors : %ld\n", logical_processors);
     printf("Execution mode     : pthread dynamic scheduler\n");
     printf("Worker threads     : %ld\n", worker_threads);
+    printf("Full scan          : %s\n", full_scan ? "yes" : "no");
 
     start_time = timer_now_seconds();
 
@@ -168,6 +196,7 @@ int main(int argc, char **argv)
                                               total_space,
                                               cfg.chunk_size,
                                               cfg.verbose,
+                                              full_scan,
                                               worker_threads,
                                               &result);
 

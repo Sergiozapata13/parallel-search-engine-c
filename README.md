@@ -52,3 +52,23 @@ El resultado se genera en:
     benchmarks/results.csv
 
 Los archivos CSV generados no se versionan por defecto porque los resultados dependen del hardware, sistema operativo, carga del sistema y entorno de ejecución.
+
+## Modo full scan
+
+El modo normal se detiene cuando algún hilo encuentra la cadena objetivo:
+
+    ./parallel_search config/benchmark.conf --threads 4
+
+Para benchmarks más reproducibles, se puede usar `--full-scan`:
+
+    ./parallel_search config/benchmark.conf --threads 4 --full-scan
+
+En este modo, el programa registra el objetivo encontrado, pero continúa hasta procesar todo el espacio de búsqueda. Esto hace que `Attempts` sea igual a `Search space`, lo cual permite comparar mejor el throughput entre distintas cantidades de hilos.
+
+El script de benchmarks usa `--full-scan` por defecto:
+
+    RUNS=3 THREADS="1 2 4 8 12" scripts/run_benchmarks.sh
+
+Para desactivar full scan en el script:
+
+    FULL_SCAN=0 RUNS=3 THREADS="1 2 4 8 12" scripts/run_benchmarks.sh

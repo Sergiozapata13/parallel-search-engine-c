@@ -15,7 +15,7 @@ SRC = src/main.c \
 
 BIN = parallel_search
 
-.PHONY: all debug sanitize clean run
+.PHONY: all debug sanitize clean run test valgrind benchmark check
 
 all:
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(SRC) -o $(BIN)
@@ -28,6 +28,21 @@ sanitize:
 
 run: all
 	./$(BIN) config/example.conf
+
+test: all
+	./$(BIN) config/example.conf --threads 1
+	./$(BIN) config/example.conf --threads 2
+	./$(BIN) config/example.conf --threads 4
+	./$(BIN) config/benchmark.conf --threads 4 --full-scan
+
+valgrind: debug
+	valgrind --leak-check=full --show-leak-kinds=all ./$(BIN) config/example.conf --threads 4 --full-scan
+
+benchmark:
+	RUNS=1 THREADS="1 2 4" scripts/run_benchmarks.sh
+
+check: clean all test sanitize
+	./$(BIN) config/example.conf --threads 4 --full-scan
 
 clean:
 	rm -f $(BIN)

@@ -87,3 +87,31 @@ Para benchmarks, se recomienda desactivarlo:
     print_ranges=0
 
 Esto reduce el ruido en consola y evita que las mediciones se vean afectadas por impresión innecesaria.
+
+## Validación automatizada
+
+El `Makefile` incluye comandos para compilar, probar y validar el proyecto.
+
+Compilación normal:
+
+    make
+
+Ejecución de pruebas funcionales básicas:
+
+    make test
+
+Compilación con sanitizers:
+
+    make sanitize
+
+Validación con Valgrind:
+
+    make valgrind
+
+Benchmark rápido:
+
+    make benchmark
+
+Limpieza del binario generado:
+
+    make clean

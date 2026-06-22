@@ -4,9 +4,84 @@
 #include "scheduler.h"
 #include "timer.h"
 
+#include <errno.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+static void print_usage(const char *program_name)
+{
+    fprintf(stderr,
+            "Uso:\n"
+            "  %s <archivo_config>\n"
+            "  %s <archivo_config> --threads <N>\n\n"
+            "Ejemplos:\n"
+            "  %s config/example.conf\n"
+            "  %s config/example.conf --threads 4\n",
+            program_name,
+            program_name,
+            program_name,
+            program_name);
+}
+
+static int parse_thread_count(const char *text, long *out)
+{
+    char *end;
+    long value;
+
+    if (text == NULL || out == NULL) {
+        return -1;
+    }
+
+    errno = 0;
+    value = strtol(text, &end, 10);
+
+    if (errno != 0 || end == text || *end != '\0') {
+        return -1;
+    }
+
+    if (value < 1L || value > INT_MAX) {
+        return -1;
+    }
+
+    *out = value;
+    return 0;
+}
+
+static int parse_arguments(int argc,
+                           char **argv,
+                           const char **config_path,
+                           long *requested_threads,
+                           int *threads_was_set)
+{
+    if (argc != 2 && argc != 4) {
+        return -1;
+    }
+
+    if (config_path == NULL || requested_threads == NULL || threads_was_set == NULL) {
+        return -1;
+    }
+
+    *config_path = argv[1];
+    *requested_threads = 0L;
+    *threads_was_set = 0;
+
+    if (argc == 4) {
+        if (strcmp(argv[2], "--threads") != 0) {
+            return -1;
+        }
+
+        if (parse_thread_count(argv[3], requested_threads) != 0) {
+            return -1;
+        }
+
+        *threads_was_set = 1;
+    }
+
+    return 0;
+}
 
 int main(int argc, char **argv)
 {
@@ -17,18 +92,19 @@ int main(int argc, char **argv)
     int overflow;
     uint64_t total_space;
     long logical_processors;
+    long worker_threads;
+    long requested_threads;
+    int threads_was_set;
     double start_time;
     double end_time;
     ParallelSearchResult result;
     int search_status;
     char found_candidate[MAX_PASSWORD_LEN + 1U];
 
-    if (argc != 2) {
-        fprintf(stderr, "Uso: %s <archivo_config>\n", argv[0]);
+    if (parse_arguments(argc, argv, &config_path, &requested_threads, &threads_was_set) != 0) {
+        print_usage(argv[0]);
         return EXIT_FAILURE;
     }
-
-    config_path = argv[1];
 
     if (config_load(config_path, &cfg) != 0) {
         fprintf(stderr, "Error: no se pudo cargar la configuración.\n");
@@ -62,13 +138,26 @@ int main(int argc, char **argv)
 
     logical_processors = scheduler_detect_logical_processors();
 
+    if (threads_was_set) {
+        if (requested_threads > logical_processors) {
+            fprintf(stderr,
+                    "Error: --threads no debe exceder los procesadores lógicos detectados (%ld).\n",
+                    logical_processors);
+            return EXIT_FAILURE;
+        }
+
+        worker_threads = requested_threads;
+    } else {
+        worker_threads = logical_processors;
+    }
+
     printf("=== parallel-search-engine-c ===\n");
     config_print(&cfg);
     printf("Charset size       : %zu\n", alphabet_size);
     printf("Search space       : %" PRIu64 "\n", total_space);
     printf("Logical processors : %ld\n", logical_processors);
     printf("Execution mode     : pthread dynamic scheduler\n");
-    printf("Worker threads     : %ld\n", logical_processors);
+    printf("Worker threads     : %ld\n", worker_threads);
 
     start_time = timer_now_seconds();
 
@@ -79,7 +168,7 @@ int main(int argc, char **argv)
                                               total_space,
                                               cfg.chunk_size,
                                               cfg.verbose,
-                                              logical_processors,
+                                              worker_threads,
                                               &result);
 
     end_time = timer_now_seconds();

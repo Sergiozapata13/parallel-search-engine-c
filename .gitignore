@@ -1,0 +1,7 @@
+parallel_search
+*.o
+*.out
+*.log
+*.csv
+*.dSYM/
+.vscode/

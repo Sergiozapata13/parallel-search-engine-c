@@ -21,6 +21,7 @@ int scheduler_parallel_search(const char *target,
                               uint64_t chunk_size,
                               int verbose,
                               int full_scan,
+                              int print_ranges,
                               long thread_count,
                               ParallelSearchResult *result);
 

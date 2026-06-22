@@ -20,6 +20,7 @@ typedef struct {
     uint64_t chunk_size;
     int verbose;
     int full_scan;
+    int print_ranges;
 
     uint64_t next_start;
     uint64_t attempts;
@@ -163,7 +164,9 @@ static void *worker_run(void *arg)
             break;
         }
 
-        report_range(shared, worker->thread_id, start, end);
+        if (shared->print_ranges) {
+            report_range(shared, worker->thread_id, start, end);
+        }
 
         range_attempt = 0U;
 
@@ -226,6 +229,7 @@ int scheduler_parallel_search(const char *target,
                               uint64_t chunk_size,
                               int verbose,
                               int full_scan,
+                              int print_ranges,
                               long thread_count,
                               ParallelSearchResult *result)
 {
@@ -258,6 +262,7 @@ int scheduler_parallel_search(const char *target,
     shared.chunk_size = chunk_size;
     shared.verbose = verbose;
     shared.full_scan = full_scan;
+    shared.print_ranges = print_ranges;
     shared.next_start = 0U;
     shared.attempts = 0U;
     shared.found_index = 0U;

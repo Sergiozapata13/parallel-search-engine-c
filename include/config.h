@@ -12,6 +12,7 @@ typedef struct {
     size_t length;
     char target[MAX_PASSWORD_LEN + 1];
     int verbose;
+    int print_ranges;
     uint64_t chunk_size;
 } Config;
 

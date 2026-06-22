@@ -51,6 +51,7 @@ static void config_set_defaults(Config *cfg)
     cfg->length = 0;
     cfg->target[0] = '\0';
     cfg->verbose = 0;
+    cfg->print_ranges = 1;
     cfg->chunk_size = DEFAULT_CHUNK_SIZE;
 }
 
@@ -122,6 +123,12 @@ int config_load(const char *path, Config *cfg)
                 return -1;
             }
             cfg->verbose = (int)parsed;
+        } else if (strcmp(key, "print_ranges") == 0) {
+            if (parse_u64(value, &parsed) != 0 || parsed > 1U) {
+                fclose(file);
+                return -1;
+            }
+            cfg->print_ranges = (int)parsed;
         } else if (strcmp(key, "chunk_size") == 0) {
             if (parse_u64(value, &parsed) != 0 || parsed == 0U) {
                 fclose(file);
@@ -165,6 +172,11 @@ int config_validate(const Config *cfg)
         return -1;
     }
 
+    if (cfg->print_ranges != 0 && cfg->print_ranges != 1) {
+        fprintf(stderr, "print_ranges debe ser 0 o 1.\n");
+        return -1;
+    }
+
     if (cfg->chunk_size == 0U) {
         fprintf(stderr, "chunk_size debe ser mayor que 0.\n");
         return -1;
@@ -183,5 +195,6 @@ void config_print(const Config *cfg)
     printf("Length             : %zu\n", cfg->length);
     printf("Target             : %s\n", cfg->target);
     printf("Verbose            : %d\n", cfg->verbose);
+    printf("Print ranges       : %d\n", cfg->print_ranges);
     printf("Chunk size         : %" PRIu64 "\n", cfg->chunk_size);
 }

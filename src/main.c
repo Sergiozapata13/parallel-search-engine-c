@@ -197,6 +197,7 @@ int main(int argc, char **argv)
                                               cfg.chunk_size,
                                               cfg.verbose,
                                               full_scan,
+                                              cfg.print_ranges,
                                               worker_threads,
                                               &result);
 

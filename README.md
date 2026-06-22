@@ -72,3 +72,18 @@ El script de benchmarks usa `--full-scan` por defecto:
 Para desactivar full scan en el script:
 
     FULL_SCAN=0 RUNS=3 THREADS="1 2 4 8 12" scripts/run_benchmarks.sh
+
+
+## Control de impresión de rangos
+
+El archivo de configuración permite controlar si cada hilo imprime los rangos de trabajo asignados:
+
+    print_ranges=1
+
+Este modo es útil para demostrar visualmente la distribución dinámica de chunks entre hilos.
+
+Para benchmarks, se recomienda desactivarlo:
+
+    print_ranges=0
+
+Esto reduce el ruido en consola y evita que las mediciones se vean afectadas por impresión innecesaria.

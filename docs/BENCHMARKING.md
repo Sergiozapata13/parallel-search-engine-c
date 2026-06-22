@@ -104,3 +104,23 @@ Benchmark results depend on:
 - console output
 
 For final measurements, use native Ubuntu Linux when possible.
+
+## Automatic benchmark analysis
+
+The project includes a Python script to analyze the generated CSV file:
+
+    python3 scripts/analyze_benchmarks.py benchmarks/results.csv
+
+It computes:
+
+- average elapsed time
+- average throughput
+- speedup
+- parallel efficiency
+
+The Makefile exposes two targets:
+
+    make analyze-benchmark
+    make benchmark-report
+
+`make benchmark-report` runs a benchmark and immediately prints the analysis table.

@@ -189,3 +189,24 @@ Casos cubiertos:
 - print_ranges inválido
 - chunk_size inválido
 - target ausente
+
+## Análisis automático de benchmarks
+
+El proyecto incluye un script para analizar `benchmarks/results.csv` y calcular métricas agregadas:
+
+- tiempo promedio
+- throughput promedio
+- speedup
+- eficiencia paralela
+
+Ejecutar análisis sobre el CSV existente:
+
+    make analyze-benchmark
+
+Ejecutar benchmark y análisis en un solo paso:
+
+    make benchmark-report
+
+También puede ejecutarse directamente:
+
+    python3 scripts/analyze_benchmarks.py benchmarks/results.csv

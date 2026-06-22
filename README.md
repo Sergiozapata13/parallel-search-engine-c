@@ -30,3 +30,25 @@ Si se pasa una cantidad inválida de hilos, el programa muestra un mensaje de us
 ./parallel_search config/example.conf --threads abc
 ./parallel_search config/example.conf --threads 99
 ~~~~
+
+## Benchmarking
+
+El proyecto incluye una configuración de benchmark en:
+
+    config/benchmark.conf
+
+Esta configuración usa una cadena objetivo local al final del espacio de búsqueda para medir mejor el comportamiento con diferentes cantidades de hilos.
+
+Ejecución rápida:
+
+    RUNS=1 THREADS="1 2 4" scripts/run_benchmarks.sh
+
+Ejecución recomendada:
+
+    RUNS=3 THREADS="1 2 4 8 12" scripts/run_benchmarks.sh
+
+El resultado se genera en:
+
+    benchmarks/results.csv
+
+Los archivos CSV generados no se versionan por defecto porque los resultados dependen del hardware, sistema operativo, carga del sistema y entorno de ejecución.

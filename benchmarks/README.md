@@ -22,3 +22,15 @@ Quick test:
 ~~~~bash
 RUNS=1 THREADS="1 2 4" scripts/run_benchmarks.sh
 ~~~~
+
+## Versioned summary
+
+Raw benchmark CSV files are generated artifacts and are ignored by Git.
+
+A versioned Markdown summary can be generated with:
+
+    make benchmark-summary
+
+Output:
+
+    benchmarks/summary.md

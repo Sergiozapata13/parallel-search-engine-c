@@ -124,3 +124,27 @@ The Makefile exposes two targets:
     make benchmark-report
 
 `make benchmark-report` runs a benchmark and immediately prints the analysis table.
+
+## Versioned benchmark summary
+
+A versioned Markdown benchmark report can be generated with:
+
+    make benchmark-summary
+
+This creates:
+
+    benchmarks/summary.md
+
+The summary includes:
+
+- execution environment
+- Git commit
+- benchmark configuration
+- average attempts
+- average elapsed time
+- average throughput
+- speedup
+- parallel efficiency
+- technical interpretation
+
+The raw CSV file is generated and ignored by Git, while the Markdown summary is intended to be committed.

@@ -210,3 +210,18 @@ Ejecutar benchmark y análisis en un solo paso:
 También puede ejecutarse directamente:
 
     python3 scripts/analyze_benchmarks.py benchmarks/results.csv
+
+## Reporte versionable de benchmark
+
+El proyecto puede generar un resumen Markdown versionable del benchmark:
+
+    make benchmark-summary
+
+Este comando:
+
+1. ejecuta benchmarks,
+2. genera `benchmarks/results.csv`,
+3. analiza los resultados,
+4. escribe `benchmarks/summary.md`.
+
+El archivo `benchmarks/results.csv` es un artefacto generado e ignorado por Git. El archivo `benchmarks/summary.md` sí se versiona para documentar resultados representativos.

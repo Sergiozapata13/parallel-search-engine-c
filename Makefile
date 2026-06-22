@@ -15,7 +15,7 @@ SRC = src/main.c \
 
 BIN = parallel_search
 
-.PHONY: all debug sanitize clean run test test-invalid valgrind benchmark analyze-benchmark benchmark-report check
+.PHONY: all debug sanitize clean run test test-invalid valgrind benchmark analyze-benchmark benchmark-report benchmark-summary check
 
 all:
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(SRC) -o $(BIN)
@@ -48,6 +48,11 @@ analyze-benchmark:
 	python3 scripts/analyze_benchmarks.py benchmarks/results.csv
 
 benchmark-report: benchmark analyze-benchmark
+
+benchmark-summary:
+	RUNS="$${RUNS:-3}" THREADS="$${THREADS:-1 2 4 8 12}" scripts/run_benchmarks.sh
+	python3 scripts/write_benchmark_summary.py benchmarks/results.csv benchmarks/summary.md
+	cat benchmarks/summary.md
 
 check: clean all test test-invalid sanitize
 	./$(BIN) config/example.conf --threads 4 --full-scan

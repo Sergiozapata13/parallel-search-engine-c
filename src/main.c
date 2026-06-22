@@ -19,8 +19,7 @@ int main(int argc, char **argv)
     long logical_processors;
     double start_time;
     double end_time;
-    uint64_t found_index;
-    uint64_t attempts;
+    ParallelSearchResult result;
     int search_status;
     char found_candidate[MAX_PASSWORD_LEN + 1U];
 
@@ -68,34 +67,36 @@ int main(int argc, char **argv)
     printf("Charset size       : %zu\n", alphabet_size);
     printf("Search space       : %" PRIu64 "\n", total_space);
     printf("Logical processors : %ld\n", logical_processors);
-    printf("Execution mode     : sequential baseline\n");
+    printf("Execution mode     : pthread dynamic scheduler\n");
+    printf("Worker threads     : %ld\n", logical_processors);
 
     start_time = timer_now_seconds();
 
-    search_status = search_sequential(cfg.target,
-                                      charset,
-                                      alphabet_size,
-                                      cfg.length,
-                                      total_space,
-                                      cfg.verbose,
-                                      &found_index,
-                                      &attempts);
+    search_status = scheduler_parallel_search(cfg.target,
+                                              charset,
+                                              alphabet_size,
+                                              cfg.length,
+                                              total_space,
+                                              cfg.chunk_size,
+                                              cfg.verbose,
+                                              logical_processors,
+                                              &result);
 
     end_time = timer_now_seconds();
 
     if (search_status < 0) {
-        fprintf(stderr, "Error: falló la búsqueda secuencial.\n");
+        fprintf(stderr, "Error: falló la búsqueda paralela.\n");
         return EXIT_FAILURE;
     }
 
     if (search_status == 0) {
         printf("Found              : no\n");
-        printf("Attempts           : %" PRIu64 "\n", attempts);
+        printf("Attempts           : %" PRIu64 "\n", result.attempts);
         printf("Elapsed time       : %.6f s\n", end_time - start_time);
         return EXIT_FAILURE;
     }
 
-    if (index_to_candidate(found_index,
+    if (index_to_candidate(result.found_index,
                            charset,
                            alphabet_size,
                            cfg.length,
@@ -107,13 +108,14 @@ int main(int argc, char **argv)
 
     printf("Found              : yes\n");
     printf("Found candidate    : %s\n", found_candidate);
-    printf("Found index        : %" PRIu64 "\n", found_index);
-    printf("Attempts           : %" PRIu64 "\n", attempts);
+    printf("Found index        : %" PRIu64 "\n", result.found_index);
+    printf("Winning thread     : %d\n", result.winning_thread);
+    printf("Attempts           : %" PRIu64 "\n", result.attempts);
     printf("Elapsed time       : %.6f s\n", end_time - start_time);
 
     if ((end_time - start_time) > 0.0) {
         printf("Throughput         : %.2f attempts/s\n",
-               (double)attempts / (end_time - start_time));
+               (double)result.attempts / (end_time - start_time));
     }
 
     return EXIT_SUCCESS;
